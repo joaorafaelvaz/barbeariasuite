@@ -1,0 +1,581 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// --- NextAuth adapter models ---
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// --- Core models ---
+
+model Network {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  units     Unit[]
+  users     User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Unit {
+  id        String     @id @default(cuid())
+  name      String
+  slug      String     @unique
+  networkId String
+  network   Network    @relation(fields: [networkId], references: [id], onDelete: Cascade)
+  users     UserUnit[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([networkId])
+}
+
+model User {
+  id           String                 @id @default(cuid())
+  email        String                 @unique
+  name         String
+  passwordHash String?
+  image        String?
+  role         Role                   @default(COLABORADOR)
+  networkId    String?
+  network      Network?               @relation(fields: [networkId], references: [id])
+  units        UserUnit[]
+  permissions  UserModulePermission[]
+  accounts     Account[]
+  sessions     Session[]
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  @@index([networkId])
+}
+
+model UserUnit {
+  userId String
+  unitId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  unit   Unit @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@id([userId, unitId])
+  @@index([unitId])
+}
+
+enum Role {
+  SUPER_ADMIN
+  FRANQUEADOR
+  MULTIFRANQUEADO
+  GERENTE
+  COLABORADOR
+}
+
+model UserModulePermission {
+  id     String  @id @default(cuid())
+  userId String
+  unitId String?
+  module Module
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, unitId, module])
+  @@index([userId])
+}
+
+enum Module {
+  BARBERSHOP
+  LINKFOOD
+  WAHASEND
+  VIPCAM
+  VIP_DATA
+  TOTALIA
+  INSTAGRAM
+}
+
+// ============================================================
+// TOTALIA MODULE TABLES
+// ============================================================
+
+model TotaliaColaborador {
+  id             String    @id @default(cuid())
+  unitId         String
+  userId         String?
+  nome           String
+  email          String?
+  telefone       String?
+  cargo          String?
+  area           String?
+  areaAtuacao    String?
+  ativo          Boolean   @default(true)
+  grupoId        String?
+  tipoUsuario    String    @default("colaborador") // admin|gestor|colaborador
+  conviteEnviado Boolean   @default(false)
+  conviteAceito  Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  tasks          TotaliaTask[]
+  @@index([unitId])
+}
+
+model TotaliaCargo {
+  id                String   @id @default(cuid())
+  unitId            String
+  nome              String
+  descricao         String?  @db.Text
+  area              String?
+  nivel             String?
+  ativo             Boolean  @default(true)
+  salarioMin        Float?
+  salarioMax        Float?
+  requisitos        Json     @default("[]")
+  responsabilidades Json     @default("[]")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([unitId])
+}
+
+model TotaliaTask {
+  id                     String    @id @default(cuid())
+  unitId                 String
+  titulo                 String
+  descricao              String?   @db.Text
+  area                   String?
+  prioridade             String?
+  status                 String    @default("A Fazer")
+  dueDate                DateTime?
+  estimativaHoras        Float?
+  processoRelacionado    String?
+  responsavelId          String?
+  responsavel            TotaliaColaborador? @relation(fields: [responsavelId], references: [id])
+  participantes          Json      @default("[]")
+  dependsOn              Json      @default("[]")
+  checklist              Json      @default("[]")
+  criteriosAceite        Json      @default("[]")
+  evidenciasRequeridas   Json      @default("[]")
+  relacaoObjetivos       Json      @default("[]")
+  valoresAderentes       Json      @default("[]")
+  riscosMitigados        Json      @default("[]")
+  notasExecucao          String?   @db.Text
+  plano                  Json?
+  recorrencia            String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([unitId])
+  @@index([responsavelId])
+}
+
+model TotaliaProcess {
+  id                  String   @id @default(cuid())
+  unitId              String
+  name                String
+  type                String   @default("principal") // principal|apoio
+  description         String?  @db.Text
+  detailedDescription String?  @db.Text
+  status              String   @default("ativo")
+  activities          Json     @default("[]")
+  area                String?
+  objective           String?  @db.Text
+  kpis                Json?
+  checklists          Json?
+  implementationSteps Json     @default("[]")
+  requiredResources   Json     @default("[]")
+  successMetrics      Json     @default("[]")
+  risks               Json     @default("[]")
+  estimatedDuration   String?
+  responsibleRoles    Json     @default("[]")
+  hasDetailedInfo     Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([unitId])
+}
+
+model TotaliaStrategicPlanning {
+  id               String   @id @default(cuid())
+  unitId           String   @unique
+  mission          String?  @db.Text
+  vision           String?  @db.Text
+  values           String?  @db.Text
+  swotStrengths    Json     @default("[]")
+  swotWeaknesses   Json     @default("[]")
+  swotOpportunities Json    @default("[]")
+  swotThreats      Json     @default("[]")
+  objectives       Json     @default("[]")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model TotaliaFinancialCategory {
+  id        String   @id @default(cuid())
+  unitId    String
+  name      String
+  type      String   // receita|despesa
+  parentId  String?
+  parent    TotaliaFinancialCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children  TotaliaFinancialCategory[] @relation("CategoryHierarchy")
+  color     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts       TotaliaFinancialAccount[]
+  budgetItems    TotaliaBudgetPlanning[]
+  @@index([unitId])
+  @@index([parentId])
+}
+
+model TotaliaFinancialAccount {
+  id            String    @id @default(cuid())
+  unitId        String
+  type          String    // receivable|payable
+  amount        Float
+  description   String
+  categoryId    String?
+  category      TotaliaFinancialCategory? @relation(fields: [categoryId], references: [id])
+  dueDate       DateTime?
+  status        String    @default("pendente") // pendente|pago|cancelado
+  paymentDate   DateTime?
+  recurringRule Json?
+  tags          Json      @default("[]")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([unitId])
+  @@index([categoryId])
+}
+
+model TotaliaBudgetPlanning {
+  id             String   @id @default(cuid())
+  unitId         String
+  year           Int
+  month          Int
+  categoryId     String
+  category       TotaliaFinancialCategory @relation(fields: [categoryId], references: [id])
+  plannedAmount  Float    @default(0)
+  actualAmount   Float    @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([unitId, year, month, categoryId])
+  @@index([unitId])
+}
+
+model TotaliaPaymentMethod {
+  id                 String   @id @default(cuid())
+  unitId             String
+  name               String
+  description        String?
+  isActive           Boolean  @default(true)
+  discountPercentage Float    @default(0)
+  paymentDays        Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([unitId])
+}
+
+model TotaliaRisk {
+  id               String    @id @default(cuid())
+  unitId           String
+  title            String
+  description      String?   @db.Text
+  origin           String?
+  probability      String?
+  impact           String?
+  detectionDate    DateTime?
+  reviewDate       DateTime?
+  status           String    @default("identificado")
+  assignedTo       String?
+  assignedAt       DateTime?
+  resolvedAt       DateTime?
+  resolutionNotes  String?   @db.Text
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([unitId])
+}
+
+model TotaliaOpportunity {
+  id               String    @id @default(cuid())
+  unitId           String
+  title            String
+  description      String?   @db.Text
+  origin           String?
+  probability      String?
+  impact           String?
+  detectionDate    DateTime?
+  reviewDate       DateTime?
+  status           String    @default("identificada")
+  assignedTo       String?
+  assignedAt       DateTime?
+  resolvedAt       DateTime?
+  resolutionNotes  String?   @db.Text
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([unitId])
+}
+
+model TotaliaProblem {
+  id               String    @id @default(cuid())
+  unitId           String
+  title            String
+  description      String?   @db.Text
+  origin           String?
+  probability      String?
+  impact           String?
+  detectionDate    DateTime?
+  reviewDate       DateTime?
+  status           String    @default("identificado")
+  assignedTo       String?
+  assignedAt       DateTime?
+  resolvedAt       DateTime?
+  resolutionNotes  String?   @db.Text
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([unitId])
+}
+
+model TotaliaMarketingCampaign {
+  id               String   @id @default(cuid())
+  unitId           String
+  campaignName     String
+  version          Int      @default(1)
+  status           String   @default("rascunho")
+  inputs           Json?
+  outputs          Json?
+  wizardResponses  Json?
+  budgetSplit      Json?
+  channelMix       Json?
+  personas         Json?
+  adsKits          Json?
+  landingCopy      Json?
+  assumptions      Json?
+  kpisTargets      Json?
+  calendar90d      Json?
+  crmFlows         Json?
+  executiveSummary String?  @db.Text
+  messages         Json?
+  pdfUrl           String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([unitId])
+}
+
+model TotaliaMeeting {
+  id              String   @id @default(cuid())
+  unitId          String
+  title           String
+  description     String?  @db.Text
+  meetingDate     DateTime
+  meetingTime     String?
+  durationMinutes Int?
+  location        String?
+  meetingType     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([unitId])
+}
+
+model TotaliaSupplier {
+  id             String   @id @default(cuid())
+  unitId         String
+  name           String
+  cnpjCpf        String?
+  contactPerson  String?
+  email          String?
+  phone          String?
+  address        String?  @db.Text
+  status         String   @default("ativo")
+  paymentTerms   String?
+  creditLimit    Float?
+  notes          String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  products       TotaliaProduct[]
+  purchaseOrders TotaliaPurchaseOrder[]
+  @@index([unitId])
+}
+
+model TotaliaProduct {
+  id             String   @id @default(cuid())
+  unitId         String
+  name           String
+  sku            String?
+  description    String?  @db.Text
+  category       String?
+  unitOfMeasure  String?
+  unitPrice      Float    @default(0)
+  currentStock   Float    @default(0)
+  minStock       Float    @default(0)
+  status         String   @default("ativo")
+  supplierId     String?
+  supplier       TotaliaSupplier? @relation(fields: [supplierId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  orderItems     TotaliaPurchaseOrderItem[]
+  @@index([unitId])
+  @@index([supplierId])
+}
+
+model TotaliaPurchaseOrder {
+  id                   String    @id @default(cuid())
+  unitId               String
+  orderNumber          String
+  supplierId           String?
+  supplier             TotaliaSupplier? @relation(fields: [supplierId], references: [id])
+  requestedBy          String?
+  assignedTo           String?
+  requestDate          DateTime?
+  expectedDeliveryDate DateTime?
+  deliveryDate         DateTime?
+  status               String    @default("rascunho")
+  priority             String?
+  notes                String?   @db.Text
+  totalAmount          Float     @default(0)
+  discountAmount       Float     @default(0)
+  taxAmount            Float     @default(0)
+  finalAmount          Float     @default(0)
+  approvalNotes        String?   @db.Text
+  paymentMethodId      String?
+  cancellationReason   String?   @db.Text
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  items                TotaliaPurchaseOrderItem[]
+  @@index([unitId])
+  @@index([supplierId])
+}
+
+model TotaliaPurchaseOrderItem {
+  id               String   @id @default(cuid())
+  purchaseOrderId  String
+  purchaseOrder    TotaliaPurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  productId        String?
+  product          TotaliaProduct? @relation(fields: [productId], references: [id])
+  quantity         Float    @default(1)
+  receivedQuantity Float    @default(0)
+  unitPrice        Float    @default(0)
+  totalPrice       Float    @default(0)
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([purchaseOrderId])
+  @@index([productId])
+}
+
+model TotaliaUserGroup {
+  id          String   @id @default(cuid())
+  unitId      String
+  name        String
+  description String?
+  color       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  permissions TotaliaGroupPermission[]
+  @@index([unitId])
+}
+
+model TotaliaGroupPermission {
+  id             String           @id @default(cuid())
+  groupId        String
+  group          TotaliaUserGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  module         String
+  permissionType String
+  enabled        Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+
+  @@unique([groupId, module, permissionType])
+  @@index([groupId])
+}
+
+model TotaliaAdvisorProfile {
+  id          String   @id @default(cuid())
+  unitId      String   @unique
+  name        String?
+  profileData Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TotaliaAdvisorKnowledge {
+  id             String   @id @default(cuid())
+  unitId         String   @unique
+  knowledgeData  Json?
+  isConfigured   Boolean  @default(false)
+  referenceNames Json     @default("[]")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model TotaliaAdvisorConversation {
+  id        String   @id @default(cuid())
+  unitId    String
+  title     String?
+  messages  Json     @default("[]")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([unitId])
+}
+
+model TotaliaAuditLog {
+  id             String   @id @default(cuid())
+  userId         String?
+  unitId         String
+  tableName      String?
+  action         String
+  details        Json?
+  ipAddress      String?
+  userAgent      String?  @db.Text
+  createdAt      DateTime @default(now())
+
+  @@index([unitId])
+  @@index([userId])
+}
