@@ -24,6 +24,11 @@ import {
   Store,
   CheckSquare,
   Plug,
+  Bot,
+  FileText,
+  ClipboardCheck,
+  UserCheck,
+  Eye,
 } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
@@ -76,9 +81,19 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     ],
   },
   {
+    label: "Instagram",
+    items: [
+      { label: "Dashboard", href: "/instagram", icon: Bot, module: "INSTAGRAM" },
+      { label: "Aprovacoes", href: "/instagram/aprovacoes", icon: ClipboardCheck, module: "INSTAGRAM" },
+      { label: "Boas-vindas", href: "/instagram/bem-vindos", icon: UserCheck, module: "INSTAGRAM" },
+      { label: "Monitoramento", href: "/instagram/monitoramento", icon: Eye, module: "INSTAGRAM" },
+      { label: "Logs", href: "/instagram/logs", icon: FileText, module: "INSTAGRAM" },
+      { label: "Configuracao", href: "/instagram/config", icon: Settings, module: "INSTAGRAM" },
+    ],
+  },
+  {
     label: "Marketing",
     items: [
-      { label: "Instagram Bot", href: "/instagram", icon: Sparkles, module: "INSTAGRAM" },
       { label: "WhatsApp Send", href: "/wahasend", icon: MessageSquare, module: "WAHASEND" },
     ],
   },
@@ -120,7 +135,7 @@ export function Sidebar({ modules, canManageUsers }: SidebarProps) {
                 {group.label}
               </p>
               {visibleItems.map((item) => {
-                const exactMatchHrefs = ["/", "/barbershop", "/totalia", "/linkfood"]
+                const exactMatchHrefs = ["/", "/barbershop", "/totalia", "/linkfood", "/instagram"]
                 const isActive = exactMatchHrefs.includes(item.href)
                   ? pathname === item.href
                   : pathname.startsWith(item.href)

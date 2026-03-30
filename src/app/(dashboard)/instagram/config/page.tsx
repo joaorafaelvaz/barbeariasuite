@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation"
 import { hasModuleAccess } from "@/lib/permissions"
-import InstagramDashboard from "@/components/instagram/dashboard"
+import InstagramConfigPage from "@/components/instagram/config-page"
 
-export default async function InstagramPage() {
+export default async function InstagramConfigRoute() {
   const hasAccess = await hasModuleAccess("INSTAGRAM")
   if (!hasAccess) redirect("/")
 
-  return <InstagramDashboard />
+  return <InstagramConfigPage />
 }
