@@ -64,10 +64,23 @@ const ENTIDADES = [
 
 export default function SincronizacaoPage() {
   const { data, loading, refetch } = useVipDataSincronizacao(30)
-  const { data: erpStatus } = useFetch<ErpStatus>("/api/erp/status")
+  const { data: erpStatus, refetch: refetchStatus } = useFetch<ErpStatus>("/api/erp/status")
   const { data: unitsData } = useFetch<Unit[]>("/api/units")
 
   const [syncing, setSyncing] = useState(false)
+  const [reconnecting, setReconnecting] = useState(false)
+
+  async function handleReconnect() {
+    setReconnecting(true)
+    try {
+      await fetch("/api/erp/status", { method: "POST" })
+    } catch {
+      // ignora — refetch vai mostrar o novo estado
+    } finally {
+      await refetchStatus()
+      setReconnecting(false)
+    }
+  }
   const [unitId, setUnitId] = useState<string>("")
   const [entidades, setEntidades] = useState<string[]>(ENTIDADES.map((e) => e.key))
   const [dataInicio, setDataInicio] = useState("")
@@ -150,10 +163,22 @@ export default function SincronizacaoPage() {
                 <p className="text-xs text-muted-foreground mt-1">MySQL {erpStatus.versao}</p>
               </>
             ) : erpStatus.configured ? (
-              <>
+              <div className="space-y-2">
                 <Badge className="bg-red-100 text-red-700">Falha</Badge>
-                <p className="text-xs text-muted-foreground mt-1">{erpStatus.message}</p>
-              </>
+                <p className="text-xs text-muted-foreground">{erpStatus.message}</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1"
+                  onClick={handleReconnect}
+                  disabled={reconnecting}
+                >
+                  {reconnecting
+                    ? <Loader2 className="h-3 w-3 animate-spin" />
+                    : <RefreshCw className="h-3 w-3" />}
+                  Reconectar
+                </Button>
+              </div>
             ) : (
               <>
                 <Badge variant="outline">Não configurado</Badge>

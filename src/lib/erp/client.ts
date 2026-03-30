@@ -2,6 +2,13 @@ import { createPool, type Pool } from "mariadb"
 
 let pool: Pool | null = null
 
+export function resetErpPool() {
+  if (pool) {
+    pool.end().catch(() => {})
+    pool = null
+  }
+}
+
 export function getErpPool(): Pool {
   if (!pool) {
     const host = process.env.ERP_DB_HOST
@@ -25,6 +32,8 @@ export function getErpPool(): Pool {
       connectionLimit: 5,
       connectTimeout: 10000,
       acquireTimeout: 10000,
+      allowPublicKeyRetrieval: true,
+      socketTimeout: 30000,
     })
   }
   return pool
@@ -43,8 +52,15 @@ export async function erpQuery<T = Record<string, unknown>>(
   sql: string,
   params?: unknown[]
 ): Promise<T[]> {
-  const pool = getErpPool()
-  const conn = await pool.getConnection()
+  const p = getErpPool()
+  let conn
+  try {
+    conn = await p.getConnection()
+  } catch (err) {
+    // Pool falhou ao obter conexão — resetar para tentar nova conexão na próxima chamada
+    resetErpPool()
+    throw err
+  }
   try {
     const rows = await conn.query(sql, params)
     // mariadb retorna um array com meta no final — filtramos
