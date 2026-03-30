@@ -32,6 +32,8 @@ import {
   Wrench,
   CalendarDays,
   RefreshCw,
+  BarChart3,
+  SlidersHorizontal,
 } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
@@ -111,9 +113,13 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     ],
   },
   {
-    label: "Analytics",
+    label: "VIP Cam",
     items: [
-      { label: "VIP Cam", href: "/vipcam", icon: Camera, module: "VIPCAM" },
+      { label: "Dashboard", href: "/vipcam", icon: Camera, module: "VIPCAM" },
+      { label: "Cameras", href: "/vipcam/cameras", icon: Eye, module: "VIPCAM" },
+      { label: "Pessoas", href: "/vipcam/pessoas", icon: Users, module: "VIPCAM" },
+      { label: "Analytics", href: "/vipcam/analytics", icon: BarChart3, module: "VIPCAM" },
+      { label: "Configuracao", href: "/vipcam/settings", icon: SlidersHorizontal, module: "VIPCAM" },
     ],
   },
 ]
@@ -147,7 +153,7 @@ export function Sidebar({ modules, canManageUsers }: SidebarProps) {
                 {group.label}
               </p>
               {visibleItems.map((item) => {
-                const exactMatchHrefs = ["/", "/barbershop", "/totalia", "/linkfood", "/instagram", "/vip-data"]
+                const exactMatchHrefs = ["/", "/barbershop", "/totalia", "/linkfood", "/instagram", "/vip-data", "/vipcam"]
                 const isActive = exactMatchHrefs.includes(item.href)
                   ? pathname === item.href
                   : pathname.startsWith(item.href)

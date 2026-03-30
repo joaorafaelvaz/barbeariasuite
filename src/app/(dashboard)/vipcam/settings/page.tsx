@@ -1,10 +1,9 @@
 import { redirect } from "next/navigation"
 import { hasModuleAccess } from "@/lib/permissions"
-import VipCamDashboard from "@/components/vipcam/dashboard"
+import VipCamSettingsPage from "@/components/vipcam/settings-page"
 
-export default async function VipcamPage() {
+export default async function VipCamSettingsRoute() {
   const hasAccess = await hasModuleAccess("VIPCAM")
   if (!hasAccess) redirect("/")
-
-  return <VipCamDashboard />
+  return <VipCamSettingsPage />
 }

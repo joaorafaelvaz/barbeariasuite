@@ -1144,3 +1144,107 @@ model VipDataSyncLog {
   @@index([unitId])
   @@index([iniciadoEm])
 }
+
+// ─── VipCam ───────────────────────────────────────────────────────────────────
+
+model VipCamCamera {
+  id            String   @id @default(cuid())
+  unitId        String
+  nome          String
+  localizacao   String?
+  rtspUrl       String?  @db.Text
+  isActive      Boolean  @default(true)
+  resolucao     String?  // ex: "1920x1080"
+  fpsTarget     Int      @default(15)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  eventos       VipCamCameraEvento[]
+  emocoes       VipCamEmocaoRecord[]
+
+  @@index([unitId])
+}
+
+model VipCamPessoa {
+  id             String    @id @default(cuid())
+  unitId         String
+  nomeExibicao   String?
+  tipoPessoa     String    @default("unknown") // unknown | cliente | colaborador
+  primeiraVista  DateTime?
+  ultimaVista    DateTime?
+  totalVisitas   Int       @default(0)
+  avgSatisfacao  Float?
+  idadeEstimada  Int?
+  generoEstimado String?   // M | F | unknown
+  thumbnailPath  String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  emocoes   VipCamEmocaoRecord[]
+
+  @@index([unitId])
+  @@index([tipoPessoa])
+}
+
+model VipCamEmocaoRecord {
+  id               String   @id @default(cuid())
+  unitId           String
+  pessoaId         String
+  cameraId         String
+  raiva            Float    @default(0)
+  desprezo         Float    @default(0)
+  desgosto         Float    @default(0)
+  medo             Float    @default(0)
+  felicidade       Float    @default(0)
+  neutro           Float    @default(0)
+  tristeza         Float    @default(0)
+  surpresa         Float    @default(0)
+  emocaoDominante  String?
+  valence          Float?
+  arousal          Float?
+  satisfacaoScore  Float?
+  faceConfianca    Float?
+  capturedAt       DateTime @default(now())
+
+  pessoa   VipCamPessoa  @relation(fields: [pessoaId], references: [id], onDelete: Cascade)
+  camera   VipCamCamera  @relation(fields: [cameraId], references: [id], onDelete: Cascade)
+
+  @@index([unitId])
+  @@index([pessoaId])
+  @@index([cameraId])
+  @@index([capturedAt])
+}
+
+model VipCamCameraEvento {
+  id              String   @id @default(cuid())
+  unitId          String
+  cameraId        String
+  tipoEvento      String   // occupancy_snapshot | alert | person_detected
+  pessoaCount     Int      @default(0)
+  clienteCount    Int      @default(0)
+  colaboradorCount Int     @default(0)
+  avgSentimento   Float?
+  avgSatisfacao   Float?
+  detalhes        Json?
+  capturedAt      DateTime @default(now())
+
+  camera   VipCamCamera @relation(fields: [cameraId], references: [id], onDelete: Cascade)
+
+  @@index([unitId])
+  @@index([cameraId])
+  @@index([capturedAt])
+}
+
+model VipCamSettings {
+  id                String   @id @default(cuid())
+  unitId            String   @unique
+  faceThreshold     Float    @default(0.45)
+  yoloConfianca     Float    @default(0.5)
+  emaAlpha          Float    @default(0.3)
+  fpsTarget         Int      @default(15)
+  pipelineAtivo     Boolean  @default(false)
+  backendUrl        String?  // URL do serviço Python VipCam
+  updatedAt         DateTime @updatedAt
+
+  @@index([unitId])
+}
