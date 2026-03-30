@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation"
 import { hasModuleAccess } from "@/lib/permissions"
-import BarbershopDashboard from "@/components/barbershop/dashboard"
+import ClientesPageBarbershop from "@/components/barbershop/clientes-page"
 
-export default async function BarbershopPage() {
+export default async function BarbershopClientesPage() {
   const hasAccess = await hasModuleAccess("BARBERSHOP")
   if (!hasAccess) redirect("/")
 
-  return <BarbershopDashboard />
+  return <ClientesPageBarbershop />
 }

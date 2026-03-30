@@ -15,6 +15,11 @@ import {
   Users,
   Building2,
   Home,
+  BarChart2,
+  User,
+  DollarSign,
+  Target,
+  Percent,
 } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
@@ -40,9 +45,19 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     ],
   },
   {
+    label: "Barbearia VIP",
+    items: [
+      { label: "Dashboard", href: "/barbershop", icon: BarChart2, module: "BARBERSHOP" },
+      { label: "Colaboradores", href: "/barbershop/colaboradores", icon: User, module: "BARBERSHOP" },
+      { label: "Clientes", href: "/barbershop/clientes", icon: Users, module: "BARBERSHOP" },
+      { label: "Vendas", href: "/barbershop/vendas", icon: Scissors, module: "BARBERSHOP" },
+      { label: "Metas", href: "/barbershop/metas", icon: Target, module: "BARBERSHOP" },
+      { label: "Comissoes", href: "/barbershop/comissoes", icon: Percent, module: "BARBERSHOP" },
+    ],
+  },
+  {
     label: "Operacao",
     items: [
-      { label: "Barbearia VIP", href: "/barbershop", icon: Scissors, module: "BARBERSHOP" },
       { label: "Gestao Totalia", href: "/totalia", icon: LayoutDashboard, module: "TOTALIA" },
     ],
   },
@@ -93,8 +108,8 @@ export function Sidebar({ modules, canManageUsers }: SidebarProps) {
               </p>
               {visibleItems.map((item) => {
                 const isActive =
-                  item.href === "/"
-                    ? pathname === "/"
+                  item.href === "/" || item.href === "/barbershop" || item.href === "/totalia"
+                    ? pathname === item.href
                     : pathname.startsWith(item.href)
 
                 return (

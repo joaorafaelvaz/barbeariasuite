@@ -579,3 +579,134 @@ model TotaliaAuditLog {
   @@index([unitId])
   @@index([userId])
 }
+
+// ─── Barbearia VIP ───────────────────────────────────────────────────────────
+
+model BarbershopColaborador {
+  id            String   @id @default(cuid())
+  unitId        String
+  nome          String
+  tipo          String?
+  telefone      String?
+  email         String?
+  ativo         Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  vendas        BarbershopVenda[]
+  regraComissao BarbershopRegraComissao[]
+  metas         BarbershopMeta[]
+
+  @@index([unitId])
+}
+
+model BarbershopCliente {
+  id            String    @id @default(cuid())
+  unitId        String
+  nome          String
+  telefone      String?
+  email         String?
+  bairro        String?
+  cidade        String?
+  estado        String?
+  cep           String?
+  nascimento    DateTime?
+  ativo         Boolean   @default(true)
+  pontuacao     Int?
+  consumoTotal  Float?
+  ultimaVisita  DateTime?
+  statusCliente String?   // ativo, em_risco, perdido, novo
+  cadenciaDias  Int?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  vendas        BarbershopVenda[]
+
+  @@index([unitId])
+}
+
+model BarbershopVenda {
+  id               String    @id @default(cuid())
+  unitId           String
+  vendaId          String    // external ID (deduplication)
+  colaboradorId    String?
+  colaboradorNome  String?
+  clienteId        String?
+  clienteNome      String?
+  produto          String?
+  categoria        String?   // servico | produto
+  valorBruto       Float?
+  valorLiquido     Float?
+  formaPagamento   String?
+  vendaData        DateTime?
+  source           String?
+  createdAt        DateTime  @default(now())
+
+  colaborador      BarbershopColaborador? @relation(fields: [colaboradorId], references: [id])
+  cliente          BarbershopCliente?     @relation(fields: [clienteId], references: [id])
+
+  @@unique([unitId, vendaId])
+  @@index([unitId])
+  @@index([colaboradorId])
+  @@index([clienteId])
+  @@index([vendaData])
+}
+
+model BarbershopConfig {
+  id        String   @id @default(cuid())
+  unitId    String
+  chave     String
+  valor     Json
+
+  @@unique([unitId, chave])
+  @@index([unitId])
+}
+
+model BarbershopRegraComissao {
+  id               String   @id @default(cuid())
+  unitId           String
+  colaboradorId    String?
+  tipo             String   @default("geral") // geral | individual
+  percentualFixo   Float?
+  usaEscalonamento Boolean  @default(false)
+  mes              Int
+  ano              Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  colaborador      BarbershopColaborador? @relation(fields: [colaboradorId], references: [id])
+  faixas           BarbershopFaixaComissao[]
+
+  @@index([unitId])
+  @@index([colaboradorId])
+}
+
+model BarbershopFaixaComissao {
+  id          String   @id @default(cuid())
+  regraId     String
+  nome        String
+  percentual  Float
+  cor         String?
+  faixaOrdem  Int
+
+  regra       BarbershopRegraComissao @relation(fields: [regraId], references: [id], onDelete: Cascade)
+
+  @@index([regraId])
+}
+
+model BarbershopMeta {
+  id            String   @id @default(cuid())
+  unitId        String
+  colaboradorId String?
+  tipo          String   // faturamento | atendimentos | ticket_medio | novos_clientes
+  valor         Float
+  mes           Int
+  ano           Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  colaborador   BarbershopColaborador? @relation(fields: [colaboradorId], references: [id])
+
+  @@index([unitId])
+  @@index([colaboradorId])
+}
