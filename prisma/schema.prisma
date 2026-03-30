@@ -1069,3 +1069,78 @@ model InstagramStoryReplyConfig {
 
   @@index([unitId])
 }
+
+// ─── VIP Data ────────────────────────────────────────────────────────────────
+
+model VipDataServico {
+  id        String   @id @default(cuid())
+  unitId    String
+  nome      String
+  categoria String?
+  preco     Float    @default(0)
+  duracao   Int?     // minutos
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([unitId])
+}
+
+model VipDataFolga {
+  id              String   @id @default(cuid())
+  unitId          String
+  colaboradorId   String?  // null = folga da unidade
+  colaboradorNome String?
+  tipo            String   @default("fixa") // fixa | flutuante | ferias | falta
+  data            DateTime
+  motivo          String?
+  aprovada        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([unitId])
+  @@index([colaboradorId])
+}
+
+model VipDataFeriado {
+  id         String   @id @default(cuid())
+  unitId     String
+  nome       String
+  data       DateTime
+  tipo       String   @default("nacional") // nacional | estadual | municipal | custom
+  recorrente Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([unitId])
+}
+
+model VipDataRelatorioSemanal {
+  id           String   @id @default(cuid())
+  unitId       String
+  semanaInicio DateTime
+  semanaFim    DateTime
+  titulo       String?
+  conteudo     Json
+  criadoPor    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([unitId])
+  @@index([semanaInicio])
+}
+
+model VipDataSyncLog {
+  id                     String    @id @default(cuid())
+  unitId                 String
+  tipo                   String    @default("manual") // auto | manual | full_history
+  status                 String    @default("running") // running | success | error
+  registrosSincronizados Int       @default(0)
+  erros                  Int       @default(0)
+  detalhes               Json?
+  iniciadoEm             DateTime  @default(now())
+  finalizadoEm           DateTime?
+
+  @@index([unitId])
+  @@index([iniciadoEm])
+}

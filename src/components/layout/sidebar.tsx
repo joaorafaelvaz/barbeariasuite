@@ -29,6 +29,9 @@ import {
   ClipboardCheck,
   UserCheck,
   Eye,
+  Wrench,
+  CalendarDays,
+  RefreshCw,
 } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
@@ -98,9 +101,18 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     ],
   },
   {
-    label: "Dados & Analytics",
+    label: "VIP Data",
     items: [
-      { label: "VIP Data", href: "/vip-data", icon: Database, module: "VIP_DATA" },
+      { label: "Dashboard", href: "/vip-data", icon: Database, module: "VIP_DATA" },
+      { label: "Servicos", href: "/vip-data/servicos", icon: Wrench, module: "VIP_DATA" },
+      { label: "Relatorios", href: "/vip-data/relatorios", icon: FileText, module: "VIP_DATA" },
+      { label: "Calendario", href: "/vip-data/calendario", icon: CalendarDays, module: "VIP_DATA" },
+      { label: "Sincronizacao", href: "/vip-data/sincronizacao", icon: RefreshCw, module: "VIP_DATA" },
+    ],
+  },
+  {
+    label: "Analytics",
+    items: [
       { label: "VIP Cam", href: "/vipcam", icon: Camera, module: "VIPCAM" },
     ],
   },
@@ -135,7 +147,7 @@ export function Sidebar({ modules, canManageUsers }: SidebarProps) {
                 {group.label}
               </p>
               {visibleItems.map((item) => {
-                const exactMatchHrefs = ["/", "/barbershop", "/totalia", "/linkfood", "/instagram"]
+                const exactMatchHrefs = ["/", "/barbershop", "/totalia", "/linkfood", "/instagram", "/vip-data"]
                 const isActive = exactMatchHrefs.includes(item.href)
                   ? pathname === item.href
                   : pathname.startsWith(item.href)

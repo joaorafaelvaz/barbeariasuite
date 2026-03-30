@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation"
 import { hasModuleAccess } from "@/lib/permissions"
-import VipDataDashboard from "@/components/vip-data/dashboard"
+import ServicosPage from "@/components/vip-data/servicos-page"
 
-export default async function VipDataPage() {
+export default async function VipDataServicosRoute() {
   const hasAccess = await hasModuleAccess("VIP_DATA")
   if (!hasAccess) redirect("/")
 
-  return <VipDataDashboard />
+  return <ServicosPage />
 }
