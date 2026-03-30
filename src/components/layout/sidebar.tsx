@@ -20,6 +20,10 @@ import {
   DollarSign,
   Target,
   Percent,
+  Star,
+  Store,
+  CheckSquare,
+  Plug,
 } from "lucide-react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
@@ -62,9 +66,18 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     ],
   },
   {
+    label: "LinkFood",
+    items: [
+      { label: "Dashboard", href: "/linkfood", icon: UtensilsCrossed, module: "LINKFOOD" },
+      { label: "Estabelecimentos", href: "/linkfood/businesses", icon: Store, module: "LINKFOOD" },
+      { label: "Avaliacoes", href: "/linkfood/reviews", icon: Star, module: "LINKFOOD" },
+      { label: "Checklists", href: "/linkfood/checklists", icon: CheckSquare, module: "LINKFOOD" },
+      { label: "Integracoes", href: "/linkfood/integrations", icon: Plug, module: "LINKFOOD" },
+    ],
+  },
+  {
     label: "Marketing",
     items: [
-      { label: "LinkFood", href: "/linkfood", icon: UtensilsCrossed, module: "LINKFOOD" },
       { label: "Instagram Bot", href: "/instagram", icon: Sparkles, module: "INSTAGRAM" },
       { label: "WhatsApp Send", href: "/wahasend", icon: MessageSquare, module: "WAHASEND" },
     ],
@@ -107,10 +120,10 @@ export function Sidebar({ modules, canManageUsers }: SidebarProps) {
                 {group.label}
               </p>
               {visibleItems.map((item) => {
-                const isActive =
-                  item.href === "/" || item.href === "/barbershop" || item.href === "/totalia"
-                    ? pathname === item.href
-                    : pathname.startsWith(item.href)
+                const exactMatchHrefs = ["/", "/barbershop", "/totalia", "/linkfood"]
+                const isActive = exactMatchHrefs.includes(item.href)
+                  ? pathname === item.href
+                  : pathname.startsWith(item.href)
 
                 return (
                   <Link

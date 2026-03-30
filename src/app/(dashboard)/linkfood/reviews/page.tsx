@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation"
 import { hasModuleAccess } from "@/lib/permissions"
-import LinkfoodDashboard from "@/components/linkfood/dashboard"
+import ReviewsPage from "@/components/linkfood/reviews-page"
 
-export default async function LinkfoodPage() {
+export default async function LinkfoodReviewsPage() {
   const hasAccess = await hasModuleAccess("LINKFOOD")
   if (!hasAccess) redirect("/")
 
-  return <LinkfoodDashboard />
+  return <ReviewsPage />
 }
