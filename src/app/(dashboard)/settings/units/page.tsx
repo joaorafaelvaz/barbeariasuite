@@ -27,6 +27,7 @@ interface Unit {
   name: string
   slug: string
   networkId: string
+  erpId: number | null
   network: { id: string; name: string }
   createdAt: string
 }
@@ -49,15 +50,15 @@ export default function UnitsPage() {
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
 
-  const [form, setForm] = useState({ name: "", slug: "" })
+  const [form, setForm] = useState({ name: "", slug: "", erpId: "" })
 
   function openCreate() {
-    setForm({ name: "", slug: "" })
+    setForm({ name: "", slug: "", erpId: "" })
     setShowCreate(true)
   }
 
   function openEdit(unit: Unit) {
-    setForm({ name: unit.name, slug: unit.slug })
+    setForm({ name: unit.name, slug: unit.slug, erpId: unit.erpId?.toString() ?? "" })
     setEditUnit(unit)
   }
 
@@ -71,12 +72,17 @@ export default function UnitsPage() {
       return
     }
     setSaving(true)
+    const payload = {
+      name: form.name,
+      slug: form.slug,
+      erpId: form.erpId ? parseInt(form.erpId, 10) : null,
+    }
     try {
       if (editUnit) {
         const res = await fetch(`/api/units/${editUnit.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
+          body: JSON.stringify(payload),
         })
         if (!res.ok) throw new Error("Erro ao atualizar")
         toast.success("Unidade atualizada")
@@ -85,7 +91,7 @@ export default function UnitsPage() {
         const res = await fetch("/api/units", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
+          body: JSON.stringify(payload),
         })
         if (!res.ok) throw new Error("Erro ao criar")
         toast.success("Unidade criada")
@@ -190,6 +196,11 @@ export default function UnitsPage() {
                 <p className="text-xs text-muted-foreground">
                   Rede: {unit.network?.name ?? "—"}
                 </p>
+                {unit.erpId && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    ERP ID: <span className="font-mono">{unit.erpId}</span>
+                  </p>
+                )}
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Criada em{" "}
                   {new Date(unit.createdAt).toLocaleDateString("pt-BR")}
@@ -238,6 +249,20 @@ export default function UnitsPage() {
               />
               <p className="text-xs text-muted-foreground">
                 Gerado automaticamente, pode editar manualmente
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="erpId">ID do ERP</Label>
+              <Input
+                id="erpId"
+                type="number"
+                placeholder="Ex: 12 (unidades.id no banco franquia_producao)"
+                value={form.erpId}
+                onChange={(e) => setForm((f) => ({ ...f, erpId: e.target.value }))}
+              />
+              <p className="text-xs text-muted-foreground">
+                Necessário para sincronização com o ERP. Consulte a tabela{" "}
+                <code className="bg-muted px-1 rounded">unidades</code> no banco de dados.
               </p>
             </div>
           </div>

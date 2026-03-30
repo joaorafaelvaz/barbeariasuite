@@ -63,6 +63,11 @@ model Unit {
   name      String
   slug      String     @unique
   networkId String
+  erpId     Int?       @unique  // ERP: unidades.id
+  cidade    String?
+  estado    String?
+  telefone  String?
+  email     String?
   network   Network    @relation(fields: [networkId], references: [id], onDelete: Cascade)
   users     UserUnit[]
   createdAt DateTime   @default(now())
@@ -583,46 +588,60 @@ model TotaliaAuditLog {
 // ─── Barbearia VIP ───────────────────────────────────────────────────────────
 
 model BarbershopColaborador {
-  id            String   @id @default(cuid())
-  unitId        String
-  nome          String
-  tipo          String?
-  telefone      String?
-  email         String?
-  ativo         Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id               String   @id @default(cuid())
+  unitId           String
+  erpId            Int?     // ERP: usuarios.id
+  nome             String
+  tipo             String?
+  telefone         String?
+  email            String?
+  cor              String?  // cor no calendário (ERP: cor)
+  comissaoServico  Float?   // ERP: comissao_servico
+  comissaoProduto  Float?   // ERP: comissao_produto
+  dataContratacao  DateTime? // ERP: data_contratacao
+  ativo            Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   vendas        BarbershopVenda[]
   regraComissao BarbershopRegraComissao[]
   metas         BarbershopMeta[]
 
+  @@unique([unitId, erpId])
   @@index([unitId])
+  @@index([erpId])
 }
 
 model BarbershopCliente {
-  id            String    @id @default(cuid())
-  unitId        String
-  nome          String
-  telefone      String?
-  email         String?
-  bairro        String?
-  cidade        String?
-  estado        String?
-  cep           String?
-  nascimento    DateTime?
-  ativo         Boolean   @default(true)
-  pontuacao     Int?
-  consumoTotal  Float?
-  ultimaVisita  DateTime?
-  statusCliente String?   // ativo, em_risco, perdido, novo
-  cadenciaDias  Int?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                     String    @id @default(cuid())
+  unitId                 String
+  erpId                  Int?      // ERP: clientes.id
+  nome                   String
+  telefone               String?
+  email                  String?
+  cpf                    String?
+  bairro                 String?
+  cidade                 String?
+  estado                 String?
+  cep                    String?
+  nascimento             DateTime?
+  ativo                  Boolean   @default(true)
+  pontuacao              Int?
+  consumoTotal           Float?
+  ultimaVisita           DateTime?
+  ultimaVisitaUnidadeErp Int?      // ERP: ultima_visita_unidade
+  tags                   String?   // ERP: tags (JSON string)
+  origem                 String?   // ERP: origem (app, balcao, etc)
+  statusCliente          String?   // ativo, em_risco, perdido, novo
+  cadenciaDias           Int?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
   vendas        BarbershopVenda[]
 
+  @@unique([unitId, erpId])
   @@index([unitId])
+  @@index([erpId])
 }
 
 model BarbershopVenda {
@@ -1073,33 +1092,43 @@ model InstagramStoryReplyConfig {
 // ─── VIP Data ────────────────────────────────────────────────────────────────
 
 model VipDataServico {
-  id        String   @id @default(cuid())
-  unitId    String
-  nome      String
-  categoria String?
-  preco     Float    @default(0)
-  duracao   Int?     // minutos
-  ativo     Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  unitId      String
+  erpId       Int?     // ERP: produtos.id
+  nome        String
+  tipo        String?  // ERP: tipo (S=servico, P=produto)
+  categoria   String?  // ERP: categoria
+  preco       Float    @default(0)  // ERP: valor_venda
+  valorCompra Float?   // ERP: valor_compra
+  duracao     Int?     // minutos
+  ativo       Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
+  @@unique([unitId, erpId])
   @@index([unitId])
+  @@index([erpId])
 }
 
 model VipDataFolga {
   id              String   @id @default(cuid())
   unitId          String
+  erpId           Int?     // ERP: agendas_fechamentos.id
   colaboradorId   String?  // null = folga da unidade
+  colaboradorErpId Int?    // ERP: agendas_fechamentos.colaborador
   colaboradorNome String?
   tipo            String   @default("fixa") // fixa | flutuante | ferias | falta
   data            DateTime
+  dataFim         DateTime? // ERP: data_fim (para bloqueios com período)
   motivo          String?
   aprovada        Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  @@unique([unitId, erpId])
   @@index([unitId])
   @@index([colaboradorId])
+  @@index([erpId])
 }
 
 model VipDataFeriado {
