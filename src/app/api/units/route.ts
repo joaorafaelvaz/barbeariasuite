@@ -30,19 +30,44 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json()
-  const { name, slug, networkId } = body
+  const { name, slug, networkId, erpId } = body
 
   if (!name || !slug) {
     return NextResponse.json({ error: "name e slug são obrigatórios" }, { status: 400 })
   }
 
-  const resolvedNetworkId = networkId ?? session.user.networkId
+  // Resolver networkId: body → sessão → criar automaticamente para SUPER_ADMIN
+  let resolvedNetworkId: string = networkId ?? session.user.networkId ?? ""
+
   if (!resolvedNetworkId) {
-    return NextResponse.json({ error: "networkId necessário" }, { status: 400 })
+    if (session.user.role === "SUPER_ADMIN") {
+      // Criar ou reutilizar rede padrão para SUPER_ADMIN sem rede
+      const existing = await prisma.network.findFirst({ orderBy: { createdAt: "asc" } })
+      if (existing) {
+        resolvedNetworkId = existing.id
+      } else {
+        const network = await prisma.network.create({
+          data: { name: "Rede Principal", slug: "rede-principal" },
+        })
+        resolvedNetworkId = network.id
+        // Vincular o SUPER_ADMIN à nova rede
+        await prisma.user.update({
+          where: { id: session.user.id },
+          data: { networkId: network.id },
+        })
+      }
+    } else {
+      return NextResponse.json({ error: "networkId necessário" }, { status: 400 })
+    }
   }
 
   const unit = await prisma.unit.create({
-    data: { name, slug, networkId: resolvedNetworkId },
+    data: {
+      name,
+      slug,
+      networkId: resolvedNetworkId,
+      erpId: erpId ? Number(erpId) : null,
+    },
     include: { network: { select: { id: true, name: true } } },
   })
 
