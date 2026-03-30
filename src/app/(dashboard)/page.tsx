@@ -28,14 +28,14 @@ const moduleInfo: Record<Module, { label: string; description: string; icon: Rea
     href: "/barbershop",
   },
   TOTALIA: {
-    label: "Gestao Totalia",
+    label: "Gestão Total IA",
     description: "Sistema de gestao administrativa",
     icon: LayoutDashboard,
     href: "/totalia",
   },
   LINKFOOD: {
-    label: "LinkFood",
-    description: "Agregador de avaliacoes multi-plataforma",
+    label: "Reputação",
+    description: "Gestão de avaliações e presença online",
     icon: UtensilsCrossed,
     href: "/linkfood",
   },

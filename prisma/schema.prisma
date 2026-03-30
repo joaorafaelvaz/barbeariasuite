@@ -757,7 +757,7 @@ model LinkfoodPlatformConnection {
   id           String    @id @default(cuid())
   unitId       String
   businessId   String
-  platform     String    // GOOGLE | IFOOD | TRIPADVISOR | MANUAL | etc.
+  platform     String    // GOOGLE | TRIPADVISOR | FACEBOOK | YELP | MANUAL | etc.
   externalId   String?
   url          String?
   credentials  Json?

@@ -22,7 +22,6 @@ import {
   Percent,
   Star,
   Store,
-  CheckSquare,
   Plug,
   Bot,
   FileText,
@@ -72,16 +71,15 @@ const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: "Operacao",
     items: [
-      { label: "Gestao Totalia", href: "/totalia", icon: LayoutDashboard, module: "TOTALIA" },
+      { label: "Gestão Total IA", href: "/totalia", icon: LayoutDashboard, module: "TOTALIA" },
     ],
   },
   {
-    label: "LinkFood",
+    label: "Reputação",
     items: [
       { label: "Dashboard", href: "/linkfood", icon: UtensilsCrossed, module: "LINKFOOD" },
       { label: "Estabelecimentos", href: "/linkfood/businesses", icon: Store, module: "LINKFOOD" },
       { label: "Avaliacoes", href: "/linkfood/reviews", icon: Star, module: "LINKFOOD" },
-      { label: "Checklists", href: "/linkfood/checklists", icon: CheckSquare, module: "LINKFOOD" },
       { label: "Integracoes", href: "/linkfood/integrations", icon: Plug, module: "LINKFOOD" },
     ],
   },

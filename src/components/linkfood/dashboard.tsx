@@ -9,7 +9,6 @@ import { ptBR } from "date-fns/locale"
 
 const PLATFORM_LABELS: Record<string, string> = {
   GOOGLE: "Google",
-  IFOOD: "iFood",
   TRIPADVISOR: "TripAdvisor",
   MANUAL: "Manual",
   YELP: "Yelp",
@@ -44,7 +43,7 @@ export default function LinkfoodDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">LinkFood</h1>
+        <h1 className="text-2xl font-bold">Reputação</h1>
         <p className="text-muted-foreground">Gestão de avaliações e presença online</p>
       </div>
 

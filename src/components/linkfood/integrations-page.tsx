@@ -23,11 +23,6 @@ const PLATFORM_INFO: Record<string, { label: string; fields: string[]; desc: str
     fields: ["clientId", "clientSecret"],
     desc: "Conecte sua conta Google Business Profile para importar avaliações automaticamente.",
   },
-  IFOOD: {
-    label: "iFood",
-    fields: ["apiKey"],
-    desc: "Configure o acesso à API do iFood para sincronizar avaliações.",
-  },
   TRIPADVISOR: {
     label: "TripAdvisor",
     fields: ["apiKey"],
@@ -37,6 +32,11 @@ const PLATFORM_INFO: Record<string, { label: string; fields: string[]; desc: str
     label: "Yelp",
     fields: ["apiKey"],
     desc: "Configure a API do Yelp para monitoramento.",
+  },
+  FACEBOOK: {
+    label: "Facebook / Instagram",
+    fields: ["apiKey"],
+    desc: "Conecte via token de acesso para monitorar avaliações do Facebook e Instagram.",
   },
 }
 

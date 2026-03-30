@@ -19,10 +19,9 @@ import { Plus, Trash2, Star, ThumbsUp, ThumbsDown, Minus } from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
-const PLATFORMS = ["GOOGLE", "IFOOD", "TRIPADVISOR", "FACEBOOK", "YELP", "MANUAL"]
+const PLATFORMS = ["GOOGLE", "TRIPADVISOR", "FACEBOOK", "YELP", "MANUAL"]
 const PLATFORM_LABELS: Record<string, string> = {
   GOOGLE: "Google",
-  IFOOD: "iFood",
   TRIPADVISOR: "TripAdvisor",
   MANUAL: "Manual",
   YELP: "Yelp",
